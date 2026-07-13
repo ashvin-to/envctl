@@ -2,10 +2,23 @@
 #include "file/importer.h"
 #include <filesystem>
 #include <iostream>
+#include <iomanip>
 
 namespace fs = std::filesystem;
 
 namespace envctl {
+
+static void print_ok(const std::string& msg) {
+    std::cout << "  \033[32mok\033[0m  " << msg << "\n";
+}
+
+static void print_info(const std::string& msg) {
+    std::cout << "  \033[36m>\033[0m   " << msg << "\n";
+}
+
+static void print_section(const std::string& title) {
+    std::cout << "\n\033[1m" << title << "\033[0m\n";
+}
 
 int cmd_init(Context& ctx, const std::vector<std::string>& args) {
     std::string name;
@@ -25,7 +38,6 @@ int cmd_init(Context& ctx, const std::vector<std::string>& args) {
             std::cout << "  .env.production   -> production\n";
             std::cout << "  .env.staging      -> staging\n";
             std::cout << "\n  Skips .env.local (import manually: envctl import .env.local)\n";
-            std::cout << "\n  --no-import  Skip auto-import\n";
             return 0;
         }
     }
@@ -34,7 +46,8 @@ int cmd_init(Context& ctx, const std::vector<std::string>& args) {
 
     auto existing = ctx.db.get_project_by_path(root);
     if (existing) {
-        std::cout << "Project already initialized: " << existing->name << "\n";
+        std::cout << "\033[33m!\033[0m Project already initialized: "
+                  << existing->name << " (id=" << existing->id << ")\n";
         return 0;
     }
 
@@ -53,8 +66,16 @@ int cmd_init(Context& ctx, const std::vector<std::string>& args) {
 
     fs::create_directories(fs::path(root) / ".envctl");
 
-    std::cout << "Initialized envctl project: " << name << "\n";
-    std::cout << "Created profiles: development (active), production, staging\n";
+    std::cout << "\n";
+    print_section("envctl init");
+    print_ok("Project: " + name + " (id=" + std::to_string(proj.id) + ")");
+    print_ok("Path: " + root);
+    print_ok("DB: " + ctx.db.db_path());
+
+    print_section("Profiles");
+    print_ok("development (id=" + std::to_string(dev.id) + ") * active");
+    print_ok("production  (id=" + std::to_string(prod.id) + ")");
+    print_ok("staging     (id=" + std::to_string(staging.id) + ") -> development");
 
     // Auto-import existing .env files
     if (!no_import) {
@@ -75,21 +96,18 @@ int cmd_init(Context& ctx, const std::vector<std::string>& args) {
 
             auto result = import_env_file(ctx.db, prof->id, p.string(), imp.overwrite);
             if (result.imported > 0) {
-                if (!any_imported) std::cout << "\nAuto-imported:\n";
-                std::cout << "  " << imp.file << " -> " << imp.profile
-                          << " (" << result.imported << " vars";
-                if (result.skipped > 0) std::cout << ", " << result.skipped << " skipped";
-                std::cout << ")\n";
+                if (!any_imported) print_section("Import");
+                print_ok(imp.file + " -> " + imp.profile +
+                         " (" + std::to_string(result.imported) + " vars)");
                 any_imported = true;
             }
         }
         if (!any_imported) {
-            std::cout << "\nNo .env files found to import.\n";
-            std::cout << "Run 'envctl import <file>' to import manually.\n";
+            print_info("No .env files found to import");
         }
     }
 
-    std::cout << "\nDB: " << ctx.db.db_path() << "\n";
+    std::cout << "\n";
     return 0;
 }
 

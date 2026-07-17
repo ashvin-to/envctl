@@ -45,8 +45,8 @@ eval $(envctl shell)                    # Loads active profile into your shell
 | `envctl export [--format <fmt>] [--output <file>] [--resolved]` | Export to .env, JSON, shell, Docker |
 | `envctl history [--key <key>] [--limit <n>]` | View change history |
 | `envctl validate [--template .env.example]` | Validate variables (types, required) |
-| `envctl mask` | List variables with secrets hidden |
-| `envctl watch <file.env>` | Watch .env file and auto-sync changes |
+| `envctl mask` | List variables with secrets hidden (flagged secret **or** key names matching secret/token/password/key/cred patterns) |
+| `envctl watch <file.env> [--no-reload]` | Watch .env file and auto-sync changes |
 | `envctl sync [--push] [--pull]` | Sync profiles to git |
 | `envctl tui` | Launch interactive terminal UI |
 
@@ -111,7 +111,7 @@ envctl list                               # Shows **** for secrets
 envctl mask                               # Explicit mask view
 ```
 
-Secrets are never exported to git (`envctl sync` writes `# SECRET: KEY=****`).
+Secrets are never exported to git (`envctl sync` writes `# SECRET: KEY=****`). `envctl mask` also auto-hides any variable whose key looks secret (contains secret, token, password, key, or cred) even if it was not explicitly flagged.
 
 ## Shell Integration
 
@@ -124,9 +124,10 @@ eval $(envctl shell production)       # Load specific profile
 
 ```bash
 envctl watch .env                     # Watches for changes via inotify, auto-imports
+envctl watch .env --no-reload         # Report changes only, don't write to the db
 ```
 
-Prints `+`, `~`, `-` for added, changed, removed variables.
+Prints `+`, `~`, `-` for added, changed, removed variables. With `--no-reload`, changes are reported but not applied to the database.
 
 ## Sync
 

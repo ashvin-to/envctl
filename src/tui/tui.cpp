@@ -80,6 +80,7 @@ static void draw_title(WINDOW* win, int w, Context& ctx) {
 }
 
 static void draw_tabs(WINDOW* win, int w, Panel current) {
+    (void)w;
     int x = 2;
     const char* tabs[] = { "[P]rofiles", "[V]ariables", "[H]istory" };
     Panel panels[] = { Panel::PROFILES, Panel::VARIABLES, Panel::HISTORY };
@@ -92,6 +93,7 @@ static void draw_tabs(WINDOW* win, int w, Panel current) {
 }
 
 static void draw_profiles(TuiState& st, WINDOW* win, int w, int h) {
+    (void)w;
     int y = 5;
     auto active = st.ctx.db.get_active_profile(st.ctx.require_project());
 
@@ -194,6 +196,7 @@ static void draw_history(TuiState& st, WINDOW* win, int w, int h) {
 }
 
 static void draw_help(WINDOW* win, int w, int h) {
+    (void)w;
     int y = 5;
     const char* help[] = {
         "Keyboard shortcuts:",
@@ -224,6 +227,7 @@ static void draw_help(WINDOW* win, int w, int h) {
 }
 
 static void draw_input_bar(WINDOW* win, int w, TuiState& st) {
+    (void)w;
     int y = LINES - 2;
     werase(win);
     attron(A_BOLD | COLOR_PAIR(1));
@@ -247,7 +251,8 @@ int run_tui(Context& ctx) {
     init_pair(2, COLOR_GREEN, COLOR_BLACK);
     init_pair(3, COLOR_YELLOW, COLOR_BLACK);
 
-    TuiState st{ctx};
+    TuiState st{ctx, Panel::PROFILES, 0, true, false, InputMode::NONE,
+                 "", "", "", false, {}, {}, {}};
     st.load_data();
 
     WINDOW* input_win = newwin(1, COLS, LINES - 2, 0);

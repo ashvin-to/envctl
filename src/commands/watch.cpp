@@ -70,16 +70,16 @@ int cmd_watch(Context& ctx, const std::vector<std::string>& args) {
                 auto it = prev.find(k);
                 if (it == prev.end()) {
                     std::cout << "  + " << k << " = " << v << "\n";
-                    ctx.db.set_variable(pid, k, v);
+                    if (reload) ctx.db.set_variable(pid, k, v);
                 } else if (it->second != v) {
                     std::cout << "  ~ " << k << ": " << it->second << " -> " << v << "\n";
-                    ctx.db.set_variable(pid, k, v);
+                    if (reload) ctx.db.set_variable(pid, k, v);
                 }
             }
             for (auto& [k, v] : prev) {
                 if (current.find(k) == current.end()) {
                     std::cout << "  - " << k << "\n";
-                    ctx.db.delete_variable(pid, k);
+                    if (reload) ctx.db.delete_variable(pid, k);
                 }
             }
             prev = current;

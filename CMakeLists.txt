@@ -33,6 +33,7 @@ add_executable(envctl
     src/commands/history_cmd.cpp
     src/commands/validate.cpp
     src/commands/mask.cpp
+    src/commands/patterns.cpp
     src/commands/watch.cpp
     src/commands/sync.cpp
     src/commands/tui_cmd.cpp

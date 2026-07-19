@@ -34,6 +34,7 @@ int run_cli(int argc, char* argv[]) {
         {"history",  "View change history",                    cmd_history},
         {"validate", "Validate variables against template",    cmd_validate},
         {"mask",     "List variables with masked secrets",     cmd_mask},
+        {"patterns", "Manage custom secret-masking patterns",  cmd_patterns},
         {"watch",    "Watch .env file for changes",            cmd_watch},
         {"sync",     "Sync profiles via git",                  cmd_sync},
         {"tui",      "Launch terminal UI",                     cmd_tui},

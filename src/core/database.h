@@ -97,6 +97,11 @@ public:
     Template create_template(int64_t project_id, const std::string& name, const std::string& example_json);
     std::vector<Template> list_templates(int64_t project_id);
 
+    // Secret patterns (per-project, additive to built-ins)
+    bool add_secret_pattern(int64_t project_id, const std::string& pattern);
+    bool remove_secret_pattern(int64_t project_id, const std::string& pattern);
+    std::vector<std::string> list_secret_patterns(int64_t project_id);
+
     // Active profile
     bool set_active_profile(int64_t project_id, int64_t profile_id);
     std::optional<int64_t> get_active_profile(int64_t project_id);

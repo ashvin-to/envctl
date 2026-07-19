@@ -45,7 +45,10 @@ eval $(envctl shell)                    # Loads active profile into your shell
 | `envctl export [--format <fmt>] [--output <file>] [--resolved]` | Export to .env, JSON, shell, Docker |
 | `envctl history [--key <key>] [--limit <n>]` | View change history |
 | `envctl validate [--template .env.example]` | Validate variables (types, required) |
-| `envctl mask` | List variables with secrets hidden (flagged secret **or** key names matching secret/token/password/key/cred patterns) |
+| `envctl mask [--json]` | List variables with secrets hidden (flagged secret **or** key names matching secret/token/password/key/cred patterns, plus any custom patterns) |
+| `envctl patterns add <PATTERN>` | Add a custom secret-masking pattern for this project (substring, case-insensitive) |
+| `envctl patterns remove <PATTERN>` | Remove a custom secret-masking pattern |
+| `envctl patterns list` | List custom secret-masking patterns for this project |
 | `envctl watch <file.env> [--no-reload]` | Watch .env file and auto-sync changes |
 | `envctl sync [--push] [--pull]` | Sync profiles to git |
 | `envctl tui` | Launch interactive terminal UI |
@@ -112,6 +115,31 @@ envctl mask                               # Explicit mask view
 ```
 
 Secrets are never exported to git (`envctl sync` writes `# SECRET: KEY=****`). `envctl mask` also auto-hides any variable whose key looks secret (contains secret, token, password, key, or cred) even if it was not explicitly flagged.
+
+### Custom secret patterns
+
+The built-in patterns cover common cases, but you can add your own per-project patterns. A pattern is matched as a case-insensitive substring against the variable key:
+
+```bash
+envctl patterns add oauth           # Hide any key containing "oauth"
+envctl patterns add _key            # Hide any key ending in "_key"
+envctl patterns list                # Show custom patterns for this project
+envctl patterns remove oauth        # Stop hiding "oauth" keys
+```
+
+Custom patterns are stored per project (in the `secret_patterns` table) and are **additive** to the built-ins — you cannot remove the built-in patterns. Once added, `envctl mask` and `envctl mask --json` hide matching variables automatically.
+
+### JSON output
+
+`envctl mask --json` emits an array of `{ "key", "value", "secret" }`. Masked secrets keep `"value": "****"` — values are never revealed, even in JSON:
+
+```bash
+envctl mask --json
+# [
+#   {"key": "API_KEY", "value": "****", "secret": true},
+#   {"key": "PORT", "value": "8080", "secret": false}
+# ]
+```
 
 ## Shell Integration
 
@@ -182,7 +210,7 @@ Every `set` and `unset` records old/new values with timestamp and username.
 
 SQLite at `~/.config/envctl/envctl.db` (WAL mode, foreign keys enabled).
 
-Schema: `projects`, `profiles`, `variables`, `history`, `templates`, `active_profile`.
+Schema: `projects`, `profiles`, `variables`, `history`, `templates`, `active_profile`, `secret_patterns`.
 
 ## Project Structure
 
@@ -200,7 +228,7 @@ envctl/
     │   ├── envfile.{h,cpp}          # .env parser
     │   └── importer.{h,cpp}         # Import from .env, Docker, JSON
     ├── crypto/encrypt.{h,cpp}       # AES-256-CBC encryption
-    ├── commands/                     # 17 command implementations
+    ├── commands/                     # command implementations (incl. mask, patterns)
     └── tui/tui.{h,cpp}              # ncurses terminal UI
 ```
 

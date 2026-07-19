@@ -17,6 +17,7 @@ int cmd_export(Context& ctx, const std::vector<std::string>& args);
 int cmd_history(Context& ctx, const std::vector<std::string>& args);
 int cmd_validate(Context& ctx, const std::vector<std::string>& args);
 int cmd_mask(Context& ctx, const std::vector<std::string>& args);
+int cmd_patterns(Context& ctx, const std::vector<std::string>& args);
 int cmd_watch(Context& ctx, const std::vector<std::string>& args);
 int cmd_sync(Context& ctx, const std::vector<std::string>& args);
 int cmd_tui(Context& ctx, const std::vector<std::string>& args);

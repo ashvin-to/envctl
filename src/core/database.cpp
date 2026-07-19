@@ -407,6 +407,46 @@ std::vector<Template> Database::list_templates(int64_t project_id) {
     return out;
 }
 
+// --- Secret patterns ---
+
+bool Database::add_secret_pattern(int64_t project_id, const std::string& pattern) {
+    sqlite3_stmt* stmt;
+    sqlite3_prepare_v2(db_, "INSERT OR IGNORE INTO secret_patterns (project_id, pattern) VALUES (?, ?)",
+                       -1, &stmt, nullptr);
+    sqlite3_bind_int64(stmt, 1, project_id);
+    sqlite3_bind_text(stmt, 2, pattern.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_step(stmt);
+    bool ok = sqlite3_changes(db_) > 0;
+    sqlite3_finalize(stmt);
+    return ok;
+}
+
+bool Database::remove_secret_pattern(int64_t project_id, const std::string& pattern) {
+    sqlite3_stmt* stmt;
+    sqlite3_prepare_v2(db_, "DELETE FROM secret_patterns WHERE project_id=? AND pattern=?",
+                       -1, &stmt, nullptr);
+    sqlite3_bind_int64(stmt, 1, project_id);
+    sqlite3_bind_text(stmt, 2, pattern.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_step(stmt);
+    bool ok = sqlite3_changes(db_) > 0;
+    sqlite3_finalize(stmt);
+    return ok;
+}
+
+std::vector<std::string> Database::list_secret_patterns(int64_t project_id) {
+    std::vector<std::string> out;
+    sqlite3_stmt* stmt;
+    sqlite3_prepare_v2(db_, "SELECT pattern FROM secret_patterns WHERE project_id=? ORDER BY pattern",
+                       -1, &stmt, nullptr);
+    sqlite3_bind_int64(stmt, 1, project_id);
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        auto p = sqlite3_column_text(stmt, 0);
+        out.push_back(p ? (const char*)p : "");
+    }
+    sqlite3_finalize(stmt);
+    return out;
+}
+
 // --- Active Profile ---
 
 bool Database::set_active_profile(int64_t project_id, int64_t profile_id) {

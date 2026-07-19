@@ -52,6 +52,13 @@ CREATE TABLE IF NOT EXISTS active_profile (
     profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     activated_at DATETIME DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS secret_patterns (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    pattern TEXT NOT NULL,
+    UNIQUE(project_id, pattern)
+);
 )SQL";
 
 } // namespace envctl
